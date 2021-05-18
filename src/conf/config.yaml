@@ -1,0 +1,15 @@
+# 日志配置
+log_config:
+  level: debug
+  filename: ../log/default.log
+  max_size: 1
+  max_age: 30
+  max_backups: 5
+
+  # 数据库配置
+db_config:
+  user: root
+  password: 123456
+  ip: 127.0.0.1
+  port: 3306
+  dbname: chainmaker_cnm

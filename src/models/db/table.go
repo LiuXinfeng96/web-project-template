@@ -9,8 +9,8 @@ type InterestsOrder struct {
 	OrderStatus        string
 	StatusDesc         string
 	ProvinceRelationId string
-	CreateAt           int
-	UpdateAt           int    `gorm:"index:update_at_index"`
+	CreatedAt          int
+	UpdatedAt          int    `gorm:"index:update_at_index"`
 	Context            string `gorm:"type:longtext"`
 }
 
