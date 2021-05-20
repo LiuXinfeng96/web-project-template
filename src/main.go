@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	utils.InitConfig()
+	utils.SetConfig(utils.GetConfigEnv())
 	db.DBInit()
 }
 func main() {

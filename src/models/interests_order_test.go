@@ -9,7 +9,7 @@ import (
 )
 
 func ModelsInit(t *testing.T) {
-	utils.InitConfig()
+	utils.SetConfig(utils.GetConfigEnv())
 	db.DBInit()
 }
 

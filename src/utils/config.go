@@ -1,33 +1,72 @@
 package utils
 
 import (
+	"flag"
 	"fmt"
-	"log"
+	"os"
 	"web-project-model/src/loggers"
 
 	"github.com/spf13/viper"
 )
 
-//InitConfig .
-func InitConfig() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./conf")
+var allConf *AllConfig
 
-	if err := viper.ReadInConfig(); err != nil {
-		log.Println("Init config error: " + err.Error())
-		return
+type AllConfig struct {
+	LogConf *loggers.LogConifg `mapstructure:"log_config"`
+	DBConf  *DBConfig          `mapstructure:"db_config"`
+}
+
+// GetConfigEnv --Specify the path and name of the configuration file (Env)
+func GetConfigEnv() string {
+	var env string
+	n := len(os.Args)
+	for i := 1; i < n-1; i++ {
+		if os.Args[i] == "-e" || os.Args[i] == "--env" {
+			env = os.Args[i+1]
+			break
+		}
 	}
-	var logConf loggers.LogConifg
-	logConf.Level = viper.GetString("log_config.level")
-	logConf.FileName = viper.GetString("log_config.filename")
-	logConf.MaxAge = viper.GetInt("log_config.max_age")
-	logConf.MaxSize = viper.GetInt("log_level.max_size")
-	logConf.MaxBackups = viper.GetInt("log_max_backups")
-	err := loggers.InitLogger(&logConf)
+	fmt.Println("[env]:", env)
+	if env == "" {
+		fmt.Println("env is empty, set default: space")
+		env = ""
+	}
+	return env
+}
+
+//GetFlagPath --Specify the path and name of the configuration file (flag)
+func GetFlagPath() string {
+	var configPath string
+	flag.StringVar(&configPath, "config", "./conf/config.yaml", "please input config file path")
+	flag.Parse()
+	return configPath
+}
+
+//SetConfig --Set config path and file name
+func SetConfig(envPath string) {
+	var configPath string
+	if envPath != "" {
+		configPath = envPath
+	} else {
+		configPath = GetFlagPath()
+	}
+	InitConfig(configPath)
+}
+
+//InitConfig .
+func InitConfig(configPath string) {
+	viper.SetConfigFile(configPath)
+	err := viper.ReadInConfig()
 	if err != nil {
-		log.Println("Init logger error: " + err.Error())
-		return
+		panic(err)
+	}
+	allConf, err = GetAllConf()
+	if err != nil {
+		panic(err)
+	}
+	err = loggers.InitLogger(allConf.GetLogConf())
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -50,4 +89,20 @@ func GetDBConfig() string {
 	mysqlURL := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=True&loc=Local",
 		dbConfig.User, dbConfig.Password, dbConfig.IP, dbConfig.Port, dbConfig.DbName, "utf8")
 	return mysqlURL
+}
+
+func GetAllConf() (*AllConfig, error) {
+	var allConf AllConfig
+	err := viper.Unmarshal(&allConf)
+	if err != nil {
+		return nil, fmt.Errorf("[config] get all config failed: %s", err.Error())
+	}
+	return &allConf, nil
+}
+
+func GetAllConfig() *AllConfig {
+	return allConf
+}
+func (ac *AllConfig) GetLogConf() *loggers.LogConifg {
+	return ac.LogConf
 }
