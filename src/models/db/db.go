@@ -1,19 +1,17 @@
 package db
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
 	"web-project-model/src/utils"
 
-	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
-
-var zapLog *zap.Logger
 
 //DB 数据库db
 var DB *gorm.DB
@@ -43,11 +41,13 @@ func DBInit() {
 		},
 	})
 	if err != nil {
+		err = fmt.Errorf("[DB] gorm open mysql failed: %s", err.Error())
 		panic(err)
 	}
 	sqlDB, err := DB.DB()
 	if err != nil {
-		zapLog.Error("[DB] connection pool error", zap.Error(err))
+		err = fmt.Errorf("[DB] gorm connect the pool failed: %s", err.Error())
+		panic(err)
 	}
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
@@ -58,6 +58,7 @@ func DBInit() {
 		&InterestsOrder{},
 	)
 	if err != nil {
-		zapLog.Error("[DB] create table failed", zap.Error(err))
+		err = fmt.Errorf("[DB] create table failed: %s", err.Error())
+		panic(err)
 	}
 }

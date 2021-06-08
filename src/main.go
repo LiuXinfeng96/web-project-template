@@ -7,7 +7,6 @@ import (
 	"web-project-model/src/utils"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 func init() {
